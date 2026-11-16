@@ -1,58 +1,23 @@
-# Component Name
+# Bash Shell
 
-Component description for SigmaOS.
+Bash Shell is a SigmaOS component providing a functional domain model for `bash-shell` with validated state, deterministic storage, and typed errors.
 
-## Overview
+## Description
 
-This component provides $tool_name compatibility for SigmaOS operating system.
+Bash Shell shell compatibility layer for SigmaOS
 
-## Features
+## Domain model
 
-- Feature 1
-- Feature 2
+- `Shell` — domain entity
 
-## Architecture
+## API
 
-The component follows SigmaOS architecture principles:
-- Clear abstraction and encapsulation
-- Single responsibility
-- Composition over inheritance
-- Secure defaults
-- Comprehensive logging
-
-## Usage
-
-```rust
-use sigmaos_component::Component;
-
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    let mut component = Component::new()?;
-    component.init().await?;
-    Ok(())
-}
-```
-
-## Building
-
-```bash
-cargo build --release
-```
+- `new()`
 
 ## Testing
 
-```bash
+```sh
 cargo test
 ```
 
-## Security
-
-This component follows SigmaOS security principles:
-- No secrets or API keys in code
-- Secure defaults
-- Environment variable support for sensitive data
-- Comprehensive error handling
-
-## License
-
-MIT License - see LICENSE file for details
+Tests are deterministic, isolated, and self-validating.
