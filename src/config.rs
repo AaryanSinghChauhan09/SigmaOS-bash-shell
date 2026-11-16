@@ -7,7 +7,7 @@ use log::{debug, warn};
 
 /// Application configuration with secure defaults
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Bash_ShellConfig {
+pub struct ShellConfig {
     pub prompt: String,
     pub config_dir: String,
     pub data_dir: String,
@@ -17,7 +17,7 @@ pub struct Bash_ShellConfig {
     pub enable_tracing: bool,
 }
 
-impl Default for Bash_ShellConfig {
+impl Default for ShellConfig {
     fn default() -> Self {
         Self {
             config_dir: "/etc/sigmaos".to_string(),
@@ -31,7 +31,12 @@ impl Default for Bash_ShellConfig {
     }
 }
 
-impl Bash_ShellConfig {
+impl ShellConfig {
+    /// Get shell prompt
+    pub fn get_prompt(&self) -> &str {
+        &self.prompt
+    }
+
     /// Load default configuration with security defaults
     pub fn load_default() -> Result<Self> {
         debug!("Loading default configuration with secure defaults");
@@ -44,7 +49,7 @@ impl Bash_ShellConfig {
         
         if Path::new(path).exists() {
             let content = std::fs::read_to_string(path)?;
-            let config: Bash_ShellConfig = serde_json::from_str(&content)?;
+            let config: ShellConfig = serde_json::from_str(&content)?;
             
             // Validate configuration
             config.validate()?;
