@@ -8,6 +8,7 @@ use log::{debug, warn};
 /// Application configuration with secure defaults
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bash_ShellConfig {
+    pub prompt: String,
     pub config_dir: String,
     pub data_dir: String,
     pub cache_dir: String,
@@ -24,6 +25,7 @@ impl Default for Bash_ShellConfig {
             cache_dir: "/var/cache/sigmaos".to_string(),
             log_dir: "/var/log/sigmaos".to_string(),
             log_level: "info".to_string(),
+            prompt: "sigmaos> ".to_string(),
             enable_tracing: true,
         }
     }

@@ -80,18 +80,14 @@ impl Shell {
     }
 
     /// Execute command
-    pub async fn execute(&mut self, input: &str) -> Result<i32> {
-        debug!("Executing command: {}", input);
         
         let mut parser = self.parser.write().await;
-        let commands = parser.parse(input)?;
         drop(parser);
         
         let mut executor = self.executor.write().await;
         let exit_code = executor.execute(commands).await?;
         
         let mut history = self.history.write().await;
-        history.add(input, exit_code).await?;
         
         debug!("Command executed with exit code: {}", exit_code);
         Ok(exit_code)
@@ -105,15 +101,10 @@ impl Shell {
             let prompt = self.config.get_prompt();
             print!("{}", prompt);
             
-            let mut input = String::new();
-            std::io::stdin().read_line(&mut input)?;
-            let input = input.trim();
             
-            if input.is_empty() {
                 continue;
             }
             
-            self.execute(input).await?;
         }
     }
 
