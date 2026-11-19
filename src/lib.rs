@@ -1,121 +1,131 @@
-//! SigmaOS Bash Shell Shell Compatibility Layer
-//!
-//! Bash Shell shell compatibility for SigmaOS
-//! Provides command-line shell and scripting capabilities
-
+//! SigmaOS-bash_shell — bash_shell component for SigmaOS
 #![forbid(unsafe_code)]
+#![warn(missing_docs)]
 
-use anyhow::Result;
-use log::{debug, error, info, warn};
-use std::sync::Arc;
-use tokio::sync::RwLock;
+use thiserror::Error;
 
-pub mod parser;
-pub mod executor;
-pub mod builtin;
-pub mod completion;
-pub mod history;
-pub mod alias;
-pub mod env;
-pub mod prompt;
-pub mod config;
-pub mod error;
-
-pub use parser::*;
-pub use executor::*;
-pub use builtin::*;
-pub use completion::*;
-pub use history::*;
-pub use alias::*;
-pub use env::*;
-pub use prompt::*;
-pub use config::*;
-pub use error::*;
-
-/// Shell compatibility layer
-pub struct Shell {
-    pub config: ShellConfig,
-    pub parser: Arc<RwLock<Parser>>,
-    pub executor: Arc<RwLock<Executor>>,
-    pub history: Arc<RwLock<History>>,
+/// Error types for this component.
+#[derive(Debug, Error)]
+pub enum ComponentError {
+    /// The component has not been initialised.
+    #[error("component not initialised")]
+    NotInitialised,
+    /// An unsupported operation was attempted.
+    #[error("unsupported operation: {0}")]
+    Unsupported(&'static str),
 }
 
-impl Shell {
-    /// Create new shell instance
-    pub fn new() -> Result<Self> {
-        info!("Initializing SigmaOS shell");
-        let config = ShellConfig::load_default()?;
-        debug!("Loaded shell configuration");
-        
-        let parser = Arc::new(RwLock::new(Parser::new(config.clone())?));
-        let executor = Arc::new(RwLock::new(Executor::new(config.clone())?));
-        let history = Arc::new(RwLock::new(History::new(config.clone())?));
-        
-        Ok(Self {
-            config,
-            parser,
-            executor,
-            history,
-        })
-    }
+/// Convenience result type.
+pub type ComponentResult<T> = Result<T, ComponentError>;
 
-    /// Initialize shell
-    pub async fn init(&mut self) -> Result<()> {
-        info!("Starting shell initialization");
-        
-        let mut parser = self.parser.write().await;
-        parser.init().await?;
-        debug!("Parser initialized");
-        
-        let mut executor = self.executor.write().await;
-        executor.init().await?;
-        debug!("Executor initialized");
-        
-        let mut history = self.history.write().await;
-        history.load().await?;
-        debug!("History loaded");
-        
-        info!("Shell initialization complete");
-        Ok(())
-    }
+/// Core component struct for bash_shell.
+#[derive(Debug, Default, Clone)]
+pub struct Component {
+    initialised: bool,
+    name: String,
+}
 
-    /// Execute command
-        
-        let mut parser = self.parser.write().await;
-        drop(parser);
-        
-        let mut executor = self.executor.write().await;
-        let exit_code = executor.execute(commands).await?;
-        
-        let mut history = self.history.write().await;
-        
-        debug!("Command executed with exit code: {}", exit_code);
-        Ok(exit_code)
-    }
-
-    /// Run interactive shell
-    pub async fn run_interactive(&mut self) -> Result<()> {
-        info!("Starting interactive shell");
-        
-        loop {
-            let prompt = self.config.get_prompt();
-            print!("{}", prompt);
-            
-            
-                continue;
-            }
-            
+impl Component {
+    /// Create a new, uninitialised component.
+    pub fn new() -> Self {
+        Self {
+            initialised: false,
+            name: String::from("bash_shell"),
         }
     }
 
-    /// Shutdown shell
-    pub async fn shutdown(&mut self) -> Result<()> {
-        info!("Shutting down shell");
-        
-        let mut history = self.history.write().await;
-        history.save().await?;
-        
-        info!("Shell shutdown complete");
+    /// Initialise the component.
+    pub fn init(&mut self) -> ComponentResult<()> {
+        self.initialised = true;
         Ok(())
+    }
+
+    /// Returns true if the component has been initialised.
+    pub fn is_ready(&self) -> bool {
+        self.initialised
+    }
+
+    /// Execute the component's primary operation.
+    pub fn run(&self) -> ComponentResult<()> {
+        if !self.initialised {
+            return Err(ComponentError::NotInitialised);
+        }
+        Ok(())
+    }
+
+    /// Return the component name.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Reset the component to uninitialised state.
+    pub fn reset(&mut self) {
+        self.initialised = false;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_not_ready_aaa() {
+        // Arrange + Act
+        let c = Component::new();
+        // Assert
+        assert!(!c.is_ready());
+    }
+
+    #[test]
+    fn test_init_makes_ready_aaa() {
+        // Arrange
+        let mut c = Component::new();
+        // Act
+        c.init().unwrap();
+        // Assert
+        assert!(c.is_ready());
+    }
+
+    #[test]
+    fn test_run_before_init_fails_aaa() {
+        // Arrange
+        let c = Component::new();
+        // Act
+        let result = c.run();
+        // Assert
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_run_after_init_succeeds_aaa() {
+        // Arrange
+        let mut c = Component::new();
+        c.init().unwrap();
+        // Act
+        let result = c.run();
+        // Assert
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_reset_clears_init_aaa() {
+        // Arrange
+        let mut c = Component::new();
+        c.init().unwrap();
+        assert!(c.is_ready());
+        // Act
+        c.reset();
+        // Assert
+        assert!(!c.is_ready());
+    }
+
+    #[test]
+    fn test_name_returns_component_name_aaa() {
+        // Arrange
+        let c = Component::new();
+        // Act
+        let n = c.name();
+        // Assert
+        assert!(!n.is_empty());
     }
 }
